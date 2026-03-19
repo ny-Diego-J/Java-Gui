@@ -9,6 +9,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.security.cert.CertPath;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -18,6 +19,10 @@ public class Gui extends JPanel {
     ArrayList<StringBuilder> inputs = new ArrayList<>();
     int currentLine = 0;
     int xCursorPos = 0;
+    int fontSize = 78;
+    int startX = 100;
+    int startY = 100;
+    Font font = new Font("Monospaced", Font.PLAIN, fontSize);
 
     public Gui() {
         mainFrame = new JFrame();
@@ -29,6 +34,7 @@ public class Gui extends JPanel {
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setVisible(true);
         inputs.add(new StringBuilder());
+        mainFrame.setFocusTraversalKeysEnabled(false);
         mainFrame.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent keyEvent) {
@@ -50,7 +56,7 @@ public class Gui extends JPanel {
                     cursorUp();
                 } else if (keyCode == KeyEvent.VK_DOWN) {
                     cursorDown();
-                } else {
+                }  else {
                     Controller.print.println("pressed: " + keyEvent.getKeyChar());
                 }
             }
@@ -106,24 +112,27 @@ public class Gui extends JPanel {
         g2d.setStroke(new BasicStroke(2));
         g2d.setColor(Color.BLACK);
         g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
-        paintInput(g2d, 100, 100, 100);
+        paintInput(g2d);
         printCursor(g2d);
     }
 
     private void printCursor(Graphics2D g2d) {
-        //TODO: Fix position and don't make it hardcodet
-        int startHeight = currentLine * 100 + 40;
-        int startLeft = xCursorPos * 56 + 100;
+        //TODO: don't make it semi hardcoded
+        FontMetrics metrics = getFontMetrics(font);
+        int[] withs = metrics.getWidths();
+        System.out.println(metrics.getDescent());
+        int startHeight = currentLine * fontSize + 40;
+        int startLeft = xCursorPos * withs[1] + startX + 5;
         g2d.setColor(Color.white);
         g2d.setStroke(new BasicStroke(10));
         g2d.drawLine(startLeft, startHeight, startLeft, startHeight + 70);
     }
 
-    private void paintInput(Graphics2D g2d, int xPos, int yPos, int fontSize) {
-        g2d.setFont(new Font("Monospaced", Font.PLAIN, fontSize));
+    private void paintInput(Graphics2D g2d) {
+        g2d.setFont(font);
         g2d.setColor(Color.WHITE);
         for (int i = 0; i < inputs.size(); i++) {
-            g2d.drawString(inputs.get(i).toString(), xPos, yPos + (fontSize * i));
+            g2d.drawString(inputs.get(i).toString(), startX, startY + (fontSize * i));
         }
     }
 
@@ -143,6 +152,11 @@ public class Gui extends JPanel {
                 break;
             case 65535:
             default:
+                if (inputs.get(currentLine).charAt(xCursorPos) == ' '){
+                    //TODO: fix input when last key is " "
+                    inputs.get(currentLine).insert(xCursorPos, e.getKeyChar());
+                    break;
+                }
                 inputs.get(currentLine).insert(xCursorPos, e.getKeyChar());
                 xCursorPos++;
         }
@@ -151,7 +165,7 @@ public class Gui extends JPanel {
 
 
     private void deleteAtChar(int mod) {
-        if (xCursorPos == 0 && currentLine >= 1) {
+        if (xCursorPos == 0 && currentLine >= 1 && mod == 0) {
             Controller.print.println("up");
             inputs.remove(currentLine);
 
