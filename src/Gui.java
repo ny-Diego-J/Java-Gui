@@ -118,14 +118,7 @@ public class Gui extends JPanel {
         Controller.print.println(e.getKeyChar());
         switch (e.getKeyChar()) {
             case 8:
-                switch (inputs.get(currentLine).length()) {
-                    case 1:
-                        inputs.set(currentLine, new StringBuilder());
-                        xCursorPos = 0;
-                        break;
-                    default:
-                        deleteAtChar(0);
-                }
+                deleteAtChar(0);
                 break;
             case 127:
                 deleteAtChar(1);
@@ -145,10 +138,13 @@ public class Gui extends JPanel {
     }
 
     private void deleteAtChar(int mod) {
-        if (xCursorPos == 0 && currentLine > 1) {
+        if (xCursorPos == 0 && currentLine >= 1) {
             Controller.print.println("up");
-            currentLine--;
+            currentLine -= 1;
             xCursorPos = inputs.get(currentLine).length();
+            return;
+        }
+        if (xCursorPos == 0 && currentLine == 0) {
             return;
         }
         if (xCursorPos + mod <= inputs.get(currentLine).length()) {
@@ -160,6 +156,7 @@ public class Gui extends JPanel {
     }
 
     private String appendAtPoint(String s, KeyEvent e) {
+        // TODO: function can be replaced with inpusts.get(currentLine).insert(xCursorPos, e.getKeyChar)
         String start = s.substring(0, xCursorPos);
         String end = "";
         Controller.print.println("-------------");
