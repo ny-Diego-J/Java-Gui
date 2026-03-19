@@ -68,6 +68,7 @@ public class Gui extends JPanel {
             if (xCursorPos > inputs.get(currentLine).length()) {
                 xCursorPos = inputs.get(currentLine).length();
             }
+            paint(this.getGraphics());
         }
     }
 
@@ -79,6 +80,7 @@ public class Gui extends JPanel {
             if (xCursorPos > inputs.get(currentLine).length()) {
                 xCursorPos = inputs.get(currentLine).length();
             }
+            paint(this.getGraphics());
         }
     }
 
@@ -86,6 +88,7 @@ public class Gui extends JPanel {
         if (xCursorPos < inputs.get(currentLine).length()) {
             xCursorPos++;
             Controller.print.println(xCursorPos);
+            paint(this.getGraphics());
         }
     }
 
@@ -93,7 +96,7 @@ public class Gui extends JPanel {
         if (xCursorPos > 0) {
             xCursorPos--;
             Controller.print.println(xCursorPos);
-
+            paint(this.getGraphics());
         }
     }
 
@@ -104,10 +107,20 @@ public class Gui extends JPanel {
         g2d.setColor(Color.BLACK);
         g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
         paintInput(g2d, 100, 100, 100);
+        printCursor(g2d);
+    }
+
+    private void printCursor(Graphics2D g2d) {
+        //TODO: Fix position and don't make it hardcodet
+        int startHeight = currentLine * 100 + 40;
+        int startLeft = xCursorPos * 56 + 100;
+        g2d.setColor(Color.white);
+        g2d.setStroke(new BasicStroke(10));
+        g2d.drawLine(startLeft, startHeight, startLeft, startHeight + 70);
     }
 
     private void paintInput(Graphics2D g2d, int xPos, int yPos, int fontSize) {
-        g2d.setFont(new Font("SansSerif", Font.PLAIN, fontSize));
+        g2d.setFont(new Font("Monospaced", Font.PLAIN, fontSize));
         g2d.setColor(Color.WHITE);
         for (int i = 0; i < inputs.size(); i++) {
             g2d.drawString(inputs.get(i).toString(), xPos, yPos + (fontSize * i));
@@ -130,50 +143,37 @@ public class Gui extends JPanel {
                 break;
             case 65535:
             default:
-                String newText = appendAtPoint(inputs.get(currentLine).toString(), e);
-                inputs.get(currentLine).delete(0, inputs.get(currentLine).length());
-                inputs.get(currentLine).append(newText);
+                inputs.get(currentLine).insert(xCursorPos, e.getKeyChar());
+                xCursorPos++;
         }
         print(this.getGraphics());
     }
 
+
     private void deleteAtChar(int mod) {
         if (xCursorPos == 0 && currentLine >= 1) {
             Controller.print.println("up");
+            inputs.remove(currentLine);
+
             currentLine -= 1;
             xCursorPos = inputs.get(currentLine).length();
             return;
         }
-        if (xCursorPos == 0 && currentLine == 0) {
+        if (mod == 1 && xCursorPos == inputs.get(currentLine).length() && currentLine != inputs.indexOf(inputs.getLast())) {
+            inputs.get(currentLine).append(inputs.get(currentLine + 1));
+            inputs.remove(currentLine + 1);
             return;
         }
+
+        if (xCursorPos == 0 && currentLine == 0 && mod == 0) {
+            return;
+        }
+
         if (xCursorPos + mod <= inputs.get(currentLine).length()) {
             inputs.get(currentLine).replace(xCursorPos - 1 + mod, xCursorPos + mod, "");
             if (mod == 0) {
                 xCursorPos--;
             }
         }
-    }
-
-    private String appendAtPoint(String s, KeyEvent e) {
-        // TODO: function can be replaced with inpusts.get(currentLine).insert(xCursorPos, e.getKeyChar)
-        String start = s.substring(0, xCursorPos);
-        String end = "";
-        Controller.print.println("-------------");
-        Controller.print.println("String length: " + s.length());
-
-        if (xCursorPos != s.length()) {
-            end = s.substring(xCursorPos);
-            Controller.print.println("aaaaaaaaaaaaa");
-        }
-
-        Controller.print.println("Start: " + start);
-        Controller.print.println("Current point: " + xCursorPos);
-        Controller.print.println("End: " + end);
-        Controller.print.println("-------------");
-
-        xCursorPos++;
-
-        return start + e.getKeyChar() + end;
     }
 }
