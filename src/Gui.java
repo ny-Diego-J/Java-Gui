@@ -7,15 +7,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.security.cert.CertPath;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class Gui extends JPanel {
-    JFrame mainFrame;
+    JFrame mainFrame = new JFrame();
     ArrayList<StringBuilder> inputs = new ArrayList<>();
     int currentLine = 0;
     int xCursorPos = 0;
@@ -25,21 +23,7 @@ public class Gui extends JPanel {
     Font font = new Font("Monospaced", Font.BOLD, fontSize);
 
     public Gui() {
-        mainFrame = new JFrame();
-        mainFrame.setResizable(true);
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice[] screens = ge.getScreenDevices();
-
-        GraphicsDevice targetScreen = screens[0];
-        Rectangle bounds = targetScreen.getDefaultConfiguration().getBounds();
-        this.setSize(bounds.width, bounds.height);
-        mainFrame.add(this);
-        mainFrame.pack();
-        mainFrame.setLocationRelativeTo(null);
-        mainFrame.setVisible(true);
-        inputs.add(new StringBuilder());
-        mainFrame.setFocusTraversalKeysEnabled(false);
+        setupMainFrame();
         mainFrame.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent keyEvent) {
@@ -72,6 +56,22 @@ public class Gui extends JPanel {
                 //Controller.print.println("released: " + keyEvent.getKeyChar());
             }
         });
+    }
+
+    private void setupMainFrame() {
+        mainFrame.setResizable(true);
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] screens = ge.getScreenDevices();
+
+        mainFrame.setPreferredSize(new Dimension(300, 310));
+
+        mainFrame.add(this);
+        mainFrame.pack();
+        mainFrame.setLocationRelativeTo(null);
+        mainFrame.setVisible(true);
+        inputs.add(new StringBuilder());
+        mainFrame.setFocusTraversalKeysEnabled(false);
     }
 
     private void tabPressed() {
@@ -118,7 +118,7 @@ public class Gui extends JPanel {
 
     @Override
     public void paint(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
+            Graphics2D g2d = (Graphics2D) g;
         g2d.setStroke(new BasicStroke(2));
         g2d.setColor(Color.BLACK);
         g2d.fillRect(0, 0, this.getWidth(), this.getHeight());

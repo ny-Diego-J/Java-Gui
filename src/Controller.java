@@ -1,4 +1,6 @@
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 public class Controller extends ny.Controller {
 
