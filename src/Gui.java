@@ -22,13 +22,18 @@ public class Gui extends JPanel {
     int fontSize = 78;
     int startX = 100;
     int startY = 100;
-    Font font = new Font("Monospaced", Font.PLAIN, fontSize);
+    Font font = new Font("Monospaced", Font.BOLD, fontSize);
 
     public Gui() {
         mainFrame = new JFrame();
         mainFrame.setResizable(true);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] screens = ge.getScreenDevices();
 
+        GraphicsDevice targetScreen = screens[0];
+        Rectangle bounds = targetScreen.getDefaultConfiguration().getBounds();
+        this.setSize(bounds.width, bounds.height);
         mainFrame.add(this);
         mainFrame.pack();
         mainFrame.setLocationRelativeTo(null);
@@ -39,8 +44,7 @@ public class Gui extends JPanel {
             @Override
             public void keyTyped(KeyEvent keyEvent) {
                 //Controller.print.println("type: " + keyEvent.getKeyChar());
-                addKeyToList(keyEvent);
-
+                if (keyEvent.getKeyChar() != '\t') addKeyToList(keyEvent);
             }
 
             @Override
@@ -56,8 +60,10 @@ public class Gui extends JPanel {
                     cursorUp();
                 } else if (keyCode == KeyEvent.VK_DOWN) {
                     cursorDown();
-                }  else {
-                    Controller.print.println("pressed: " + keyEvent.getKeyChar());
+                } else if (keyCode == KeyEvent.VK_TAB) {
+                    tabPressed();
+                } else {
+                    Controller.print.println("pressed: " + keyEvent.getKeyCode());
                 }
             }
 
@@ -66,6 +72,12 @@ public class Gui extends JPanel {
                 //Controller.print.println("released: " + keyEvent.getKeyChar());
             }
         });
+    }
+
+    private void tabPressed() {
+        inputs.get(currentLine).insert(xCursorPos, "    ");
+        xCursorPos += 4;
+        paint(this.getGraphics());
     }
 
     private void cursorUp() {
@@ -93,7 +105,6 @@ public class Gui extends JPanel {
     private void cursorRight() {
         if (xCursorPos < inputs.get(currentLine).length()) {
             xCursorPos++;
-            Controller.print.println(xCursorPos);
             paint(this.getGraphics());
         }
     }
@@ -101,7 +112,6 @@ public class Gui extends JPanel {
     private void cursorLeft() {
         if (xCursorPos > 0) {
             xCursorPos--;
-            Controller.print.println(xCursorPos);
             paint(this.getGraphics());
         }
     }
@@ -117,15 +127,15 @@ public class Gui extends JPanel {
     }
 
     private void printCursor(Graphics2D g2d) {
-        //TODO: don't make it semi hardcoded
+        //TODO: make it scaleable
         FontMetrics metrics = getFontMetrics(font);
         int[] withs = metrics.getWidths();
         System.out.println(metrics.getDescent());
-        int startHeight = currentLine * fontSize + 40;
-        int startLeft = xCursorPos * withs[1] + startX + 5;
+        int startHeight = currentLine * fontSize + 50; //TODO: get reasoning for 50
+        int startLeft = xCursorPos * withs[1] + startX + 5; //TODO: get reasoning for 5
         g2d.setColor(Color.white);
         g2d.setStroke(new BasicStroke(10));
-        g2d.drawLine(startLeft, startHeight, startLeft, startHeight + 70);
+        g2d.drawLine(startLeft, startHeight, startLeft, startHeight + 60); //TODO: try to replace 60 with variable
     }
 
     private void paintInput(Graphics2D g2d) {
@@ -146,17 +156,13 @@ public class Gui extends JPanel {
                 deleteAtChar(1);
                 break;
             case 10:
-                inputs.add(new StringBuilder());
+                inputs.add(currentLine + 1, new StringBuilder());
                 currentLine++;
                 xCursorPos = 0;
                 break;
             case 65535:
             default:
-                if (inputs.get(currentLine).charAt(xCursorPos) == ' '){
-                    //TODO: fix input when last key is " "
-                    inputs.get(currentLine).insert(xCursorPos, e.getKeyChar());
-                    break;
-                }
+
                 inputs.get(currentLine).insert(xCursorPos, e.getKeyChar());
                 xCursorPos++;
         }
